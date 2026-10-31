@@ -1,0 +1,763 @@
+
+/* =====================================
+   MEALORA MODERN CUSTOMER ACCOUNT
+   Forest & Sand Theme
+===================================== */
+
+.profile-page {
+  min-height: 100vh;
+  background: #fcfaf4;
+  color: #244a3c;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* NAVBAR */
+
+.profile-navbar {
+  min-height: 76px;
+  padding: 0 7%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-bottom: 1px solid #e9e5d9;
+}
+
+.profile-logo {
+  color: #244a3c;
+  font-size: 29px;
+  font-weight: 800;
+  text-decoration: none;
+  letter-spacing: -1px;
+}
+
+.profile-logo span {
+  color: #c66a48;
+}
+
+.profile-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.profile-nav-links a {
+  color: #52665a;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.profile-nav-links a:hover {
+  color: #c66a48;
+}
+
+/* MAIN CONTAINER */
+
+.profile-container {
+  width: 90%;
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 55px 0 65px;
+}
+
+.profile-heading {
+  margin-bottom: 28px;
+}
+
+.profile-heading p {
+  margin: 0 0 9px;
+  color: #c66a48;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.profile-heading h1 {
+  margin: 0;
+  color: #244a3c;
+  font-size: 35px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.profile-heading span {
+  display: block;
+  margin-top: 9px;
+  color: #7b887e;
+  font-size: 14px;
+}
+
+/* PROFILE BANNER */
+
+.profile-banner {
+  min-height: 185px;
+  padding: 32px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: linear-gradient(115deg, #244a3c, #527853);
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(36, 74, 60, 0.12);
+}
+
+.profile-banner-user {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  min-width: 0;
+}
+
+.profile-avatar {
+  width: 90px;
+  height: 90px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e9dfc9;
+  color: #244a3c;
+  border: 4px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  font-size: 35px;
+  font-weight: 800;
+}
+
+.profile-banner-info {
+  min-width: 0;
+}
+
+.profile-welcome-label {
+  color: #dce9d8;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.profile-banner-info h2 {
+  margin: 9px 0 7px;
+  color: #fff;
+  font-size: 27px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.profile-banner-info p {
+  margin: 0;
+  color: #e3ebdf;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.profile-member {
+  padding: 11px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.13);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.member-dot {
+  width: 8px;
+  height: 8px;
+  background: #a8d59a;
+  border-radius: 50%;
+}
+
+/* SECTION HEADING */
+
+.profile-section-heading {
+  margin: 42px 0 20px;
+}
+
+.profile-section-heading h2 {
+  margin: 0;
+  color: #244a3c;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.profile-section-heading p {
+  margin: 7px 0 0;
+  color: #89958b;
+  font-size: 13px;
+}
+
+/* FEATURE CARDS */
+
+.profile-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px;
+}
+
+.profile-feature-card {
+  position: relative;
+  min-height: 112px;
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  background: #fff;
+  border: 1px solid #e9e5d9;
+  border-radius: 12px;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.profile-feature-card:hover {
+  transform: translateY(-4px);
+  border-color: #a8b99a;
+  box-shadow: 0 9px 22px rgba(36, 74, 60, 0.07);
+}
+
+.feature-icon {
+  width: 55px;
+  height: 55px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f0e7;
+  border-radius: 12px;
+  font-size: 25px;
+}
+
+.profile-feature-card h3 {
+  margin: 0 0 7px;
+  color: #244a3c;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.profile-feature-card p {
+  margin: 0;
+  color: #89958b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.feature-arrow {
+  margin-left: auto;
+  color: #527853;
+  font-size: 23px;
+}
+
+/* ACCOUNT INFORMATION */
+
+.profile-information-card {
+  margin-top: 30px;
+  padding: 28px;
+  background: #fff;
+  border: 1px solid #e9e5d9;
+  border-radius: 13px;
+  box-shadow: 0 5px 20px rgba(36, 74, 60, 0.035);
+}
+
+.profile-information-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #eeeae1;
+}
+
+.profile-information-heading h2 {
+  margin: 0;
+  color: #244a3c;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.profile-information-heading p {
+  margin: 7px 0 0;
+  color: #89958b;
+  font-size: 12px;
+}
+
+.profile-edit-button {
+  padding: 10px 16px;
+  background: #fff;
+  color: #244a3c;
+  border: 1px solid #cbd8c7;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.profile-edit-button:hover {
+  background: #244a3c;
+  color: #fff;
+  border-color: #244a3c;
+}
+
+.profile-information-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  padding-top: 25px;
+}
+
+.profile-information-item {
+  min-width: 0;
+  padding: 17px 18px;
+  background: #fcfaf4;
+  border: 1px solid #eeeae1;
+  border-radius: 9px;
+}
+
+.profile-information-item label {
+  display: block;
+  margin-bottom: 10px;
+  color: #89958b;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.profile-information-item p {
+  margin: 0;
+  color: #244a3c;
+  font-size: 14px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+/* BOTTOM PROMO */
+
+.profile-bottom {
+  margin-top: 28px;
+  padding: 25px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: #e9dfc9;
+  border-radius: 12px;
+}
+
+.profile-bottom h3 {
+  margin: 0 0 7px;
+  color: #244a3c;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.profile-bottom p {
+  margin: 0;
+  color: #64766a;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.profile-shop-button {
+  padding: 13px 20px;
+  flex-shrink: 0;
+  background: #244a3c;
+  color: #fff;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.profile-shop-button:hover {
+  background: #527853;
+}
+
+/* LOGOUT */
+
+.profile-logout-row {
+  margin-top: 27px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.profile-logout-row span {
+  color: #89958b;
+  font-size: 12px;
+}
+
+.profile-logout-row button {
+  padding: 8px 15px;
+  background: #fff;
+  color: #bd594b;
+  border: 1px solid #efd4cf;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.profile-logout-row button:hover {
+  background: #bd594b;
+  color: #fff;
+}
+
+/* FOOTER */
+
+.profile-footer {
+  padding: 25px 15px;
+  background: #244a3c;
+  color: #e9dfc9;
+  text-align: center;
+  font-size: 12px;
+}
+
+/* LOADING */
+
+.profile-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fcfaf4;
+  color: #244a3c;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+  .profile-navbar {
+    padding: 16px 5%;
+  }
+
+  .profile-container {
+    width: 92%;
+    padding: 38px 0 50px;
+  }
+
+  .profile-banner {
+    padding: 25px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .profile-member {
+    margin-left: 112px;
+  }
+}
+
+@media (max-width: 550px) {
+  .profile-navbar {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .profile-nav-links {
+    width: 100%;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .profile-nav-links a {
+    font-size: 12px;
+  }
+
+  .profile-heading h1 {
+    font-size: 29px;
+  }
+
+  .profile-banner-user {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .profile-banner-info h2 {
+    font-size: 22px;
+  }
+
+  .profile-member {
+    margin-left: 0;
+  }
+
+  .profile-feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-information-card {
+    padding: 20px;
+  }
+
+  .profile-information-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .profile-information-grid {
+    grid-template-columns: 1fr;
+    gap: 13px;
+  }
+
+  .profile-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .profile-shop-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .profile-logout-row {
+    justify-content: space-between;
+  }
+}
+
+/* =========================================
+   MEALORA - EDIT PROFILE MODAL
+========================================= */
+
+.edit-profile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(20, 35, 28, 0.65);
+  backdrop-filter: blur(5px);
+}
+
+.edit-profile-modal {
+  width: 100%;
+  max-width: 490px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 32px;
+  border-radius: 20px;
+  background: #fcfaf4;
+  color: #244a3c;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+  animation: editProfileAppear 0.22s ease-out;
+}
+
+@keyframes editProfileAppear {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.edit-profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+  margin-bottom: 28px;
+}
+
+.edit-profile-header span {
+  color: #82947e;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.edit-profile-header h2 {
+  margin: 8px 0;
+  color: #244a3c;
+  font-size: 27px;
+  font-weight: 800;
+}
+
+.edit-profile-header p {
+  margin: 0;
+  color: #78847a;
+  font-size: 13px;
+}
+
+.edit-profile-close {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: #e9dfc9;
+  color: #244a3c;
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.edit-profile-close:hover {
+  background: #d9cdb3;
+}
+
+.edit-profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 20px;
+}
+
+.edit-profile-field label {
+  color: #244a3c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.edit-profile-field input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid #dedfce;
+  border-radius: 10px;
+  outline: none;
+  background: #ffffff;
+  color: #244a3c;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.edit-profile-field input:focus {
+  border-color: #527853;
+  box-shadow: 0 0 0 3px rgba(82, 120, 83, 0.12);
+}
+
+.edit-profile-field input::placeholder {
+  color: #a4aaa0;
+}
+
+.edit-profile-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.edit-profile-cancel,
+.edit-profile-save {
+  min-height: 45px;
+  padding: 0 21px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.edit-profile-cancel {
+  border: 1px solid #d9dfd4;
+  background: transparent;
+  color: #526458;
+}
+
+.edit-profile-cancel:hover {
+  background: #f0eee5;
+}
+
+.edit-profile-save {
+  border: none;
+  background: #244a3c;
+  color: #ffffff;
+}
+
+.edit-profile-save:hover {
+  background: #35644f;
+  transform: translateY(-1px);
+}
+
+.edit-profile-save:disabled,
+.edit-profile-cancel:disabled,
+.edit-profile-close:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.edit-profile-error,
+.edit-profile-success {
+  padding: 12px 14px;
+  border-radius: 9px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.edit-profile-error {
+  background: #fff0ed;
+  color: #b83b2d;
+  border: 1px solid #f3c7bf;
+}
+
+.edit-profile-success {
+  background: #eaf4e9;
+  color: #28613a;
+  border: 1px solid #c7e2c6;
+}
+
+.edit-profile-loading {
+  padding: 35px 10px;
+  color: #527853;
+  text-align: center;
+  font-size: 14px;
+}
+
+@media (max-width: 520px) {
+  .edit-profile-modal {
+    padding: 24px 19px;
+    border-radius: 16px;
+  }
+
+  .edit-profile-header h2 {
+    font-size: 23px;
+  }
+
+  .edit-profile-actions {
+    flex-direction: column-reverse;
+  }
+
+  .edit-profile-cancel,
+  .edit-profile-save {
+    width: 100%;
+  }
+}
+
+/* ================================
+   MEALORA CHANGE PASSWORD
+================================ */
+
+.password-hint {
+  color: #718078;
+  font-size: 12px;
+  margin: -5px 0 16px;
+  line-height: 1.5;
+}
+
+.edit-profile-field input:focus {
+  outline: none;
+  border-color: #244a3c;
+  box-shadow: 0 0 0 3px rgba(36, 74, 60, 0.1);
+}
+
+.edit-profile-save:disabled,
+.edit-profile-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
