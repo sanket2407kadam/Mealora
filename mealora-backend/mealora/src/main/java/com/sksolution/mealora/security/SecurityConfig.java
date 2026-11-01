@@ -30,6 +30,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of(
+                "https://mealora-1-imuu.onrender.com",
                 "https://mealora-beta.vercel.app",
                 "http://localhost:3000"
         ));
