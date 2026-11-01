@@ -25,7 +25,7 @@ export default function LoginPage() {
 
     try {
       const response = await fetch(
-        "http://https://mealora-pc4s.onrender.com/api/auth/login",
+        "https://mealora-pc4s.onrender.com/api/auth/login",
         {
           method: "POST",
           headers: {
@@ -48,8 +48,6 @@ export default function LoginPage() {
         return;
       }
 
-      // Keep basic user details for the current frontend flow.
-      // This is not a secure authenticated session.
       sessionStorage.setItem(
         "mealoraUser",
         JSON.stringify({
@@ -60,9 +58,11 @@ export default function LoginPage() {
       );
 
       router.push("/");
-    } catch {
+    } catch (err) {
+      console.error("Mealora login error:", err);
+
       setError(
-        "Unable to connect to Mealora server. Make sure the backend is running."
+        "Unable to connect to Mealora server. Please try again."
       );
     } finally {
       setLoading(false);
@@ -88,6 +88,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="auth-form">
           <label htmlFor="email">Email address</label>
+
           <input
             id="email"
             name="email"
@@ -99,6 +100,7 @@ export default function LoginPage() {
 
           <div className="auth-label-row">
             <label htmlFor="password">Password</label>
+
             <button
               className="auth-text-button"
               type="button"
@@ -125,7 +127,9 @@ export default function LoginPage() {
               type="button"
               className="auth-show-password"
               onClick={() => setShowPassword(!showPassword)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={
+                showPassword ? "Hide password" : "Show password"
+              }
             >
               {showPassword ? "Hide" : "Show"}
             </button>
@@ -148,7 +152,8 @@ export default function LoginPage() {
         </form>
 
         <p className="auth-switch">
-          New to Mealora? <Link href="/register">Create an account</Link>
+          New to Mealora?{" "}
+          <Link href="/register">Create an account</Link>
         </p>
 
         <div className="auth-note">
