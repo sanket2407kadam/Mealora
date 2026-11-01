@@ -43,8 +43,8 @@ type ApiOrderResponse = {
 };
 
 const CART_KEY = "mealoraCart";
-const API_URL = "http://localhost:8080/api/orders";
-const ADDRESS_API_URL = "http://localhost:8080/api/addresses";
+const API_URL = "http://https://mealora-pc4s.onrender.com/api/orders";
+const ADDRESS_API_URL = "http://https://mealora-pc4s.onrender.com/api/addresses";
 
 const foods: Food[] = [
   {

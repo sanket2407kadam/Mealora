@@ -74,7 +74,7 @@ function OrderDetailsContent() {
         }
 
         const response = await fetch(
-          `http://localhost:8080/api/orders/history?email=${encodeURIComponent(email)}`
+          `http://https://mealora-pc4s.onrender.com/api/orders/history?email=${encodeURIComponent(email)}`
         );
 
         if (!response.ok) {
@@ -126,7 +126,7 @@ function OrderDetailsContent() {
       setCancelMessage("");
 
       const response = await fetch(
-        `http://localhost:8080/api/orders/${order.id}/cancel`,
+        `http://https://mealora-pc4s.onrender.com/api/orders/${order.id}/cancel`,
         {
           method: "PUT",
           headers: {

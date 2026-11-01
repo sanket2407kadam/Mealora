@@ -25,7 +25,7 @@ export default function LoginPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/api/auth/login",
+        "http://https://mealora-pc4s.onrender.com/api/auth/login",
         {
           method: "POST",
           headers: {

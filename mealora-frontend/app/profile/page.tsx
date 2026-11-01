@@ -37,9 +37,9 @@ type AddressForm = {
   defaultAddress: boolean;
 };
 
-const API_URL = "http://localhost:8080/api/users";
-const AUTH_API_URL = "http://localhost:8080/api/auth";
-const ADDRESS_API_URL = "http://localhost:8080/api/addresses";
+const API_URL = "http://https://mealora-pc4s.onrender.com/api/users";
+const AUTH_API_URL = "http://https://mealora-pc4s.onrender.com/api/auth";
+const ADDRESS_API_URL = "http://https://mealora-pc4s.onrender.com/api/addresses";
 
 const emptyAddressForm: AddressForm = {
   fullName: "",

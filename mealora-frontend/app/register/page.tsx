@@ -53,7 +53,7 @@ export default function RegisterPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/api/auth/register",
+        "http://https://mealora-pc4s.onrender.com/api/auth/register",
         {
           method: "POST",
           headers: {
