@@ -12,8 +12,46 @@ type User = {
   phone?: string;
 };
 
+type Address = {
+  id: number;
+  fullName: string;
+  phone: string;
+  addressLine: string;
+  city: string;
+  state: string;
+  pincode: string;
+  landmark?: string;
+  addressType: "Home" | "Work" | "Other";
+  defaultAddress: boolean;
+};
+
+type AddressForm = {
+  fullName: string;
+  phone: string;
+  addressLine: string;
+  city: string;
+  state: string;
+  pincode: string;
+  landmark: string;
+  addressType: "Home" | "Work" | "Other";
+  defaultAddress: boolean;
+};
+
 const API_URL = "http://localhost:8080/api/users";
 const AUTH_API_URL = "http://localhost:8080/api/auth";
+const ADDRESS_API_URL = "http://localhost:8080/api/addresses";
+
+const emptyAddressForm: AddressForm = {
+  fullName: "",
+  phone: "",
+  addressLine: "",
+  city: "",
+  state: "",
+  pincode: "",
+  landmark: "",
+  addressType: "Home",
+  defaultAddress: false,
+};
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -26,7 +64,6 @@ export default function ProfilePage() {
     email: "",
     phone: "",
   });
-
   const [saving, setSaving] = useState(false);
   const [fetchingProfile, setFetchingProfile] = useState(false);
   const [message, setMessage] = useState("");
@@ -39,11 +76,23 @@ export default function ProfilePage() {
     newPassword: "",
     confirmPassword: "",
   });
-
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
+  // My Addresses
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [addressError, setAddressError] = useState("");
+  const [addressMessage, setAddressMessage] = useState("");
+
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState<number | null>(null);
+  const [addressForm, setAddressForm] =
+    useState<AddressForm>(emptyAddressForm);
+  const [savingAddress, setSavingAddress] = useState(false);
+
+  // Load logged-in user
   useEffect(() => {
     const storedUser = sessionStorage.getItem("mealoraUser");
 
@@ -61,8 +110,15 @@ export default function ProfilePage() {
     setLoading(false);
   }, []);
 
-  // EDIT PROFILE FUNCTIONS
+  // Load addresses when user is available
+  useEffect(() => {
+    if (user?.id) {
+      fetchAddresses();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
+  // EDIT PROFILE FUNCTIONS
   const openEditProfile = async () => {
     if (!user?.id) {
       alert("User ID not found. Please login again.");
@@ -205,7 +261,6 @@ export default function ProfilePage() {
   };
 
   // CHANGE PASSWORD FUNCTIONS
-
   const openPasswordModal = () => {
     setPasswordData({
       currentPassword: "",
@@ -263,7 +318,9 @@ export default function ProfilePage() {
     }
 
     if (passwordData.currentPassword === passwordData.newPassword) {
-      setPasswordError("New password must be different from current password.");
+      setPasswordError(
+        "New password must be different from current password."
+      );
       return;
     }
 
@@ -314,8 +371,246 @@ export default function ProfilePage() {
     }
   };
 
-  // LOGOUT
+  // MY ADDRESSES FUNCTIONS
+  const fetchAddresses = async () => {
+    if (!user?.id) return;
 
+    setLoadingAddresses(true);
+    setAddressError("");
+
+    try {
+      const response = await fetch(
+        `${ADDRESS_API_URL}/${user.id}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to load addresses.");
+      }
+
+      setAddresses(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setAddressError(
+        err instanceof Error
+          ? err.message
+          : "Unable to load addresses."
+      );
+    } finally {
+      setLoadingAddresses(false);
+    }
+  };
+
+  const openAddAddress = () => {
+    setEditingAddressId(null);
+    setAddressForm(emptyAddressForm);
+    setAddressError("");
+    setAddressMessage("");
+    setShowAddressModal(true);
+  };
+
+  const openEditAddress = (address: Address) => {
+    setEditingAddressId(address.id);
+
+    setAddressForm({
+      fullName: address.fullName || "",
+      phone: address.phone || "",
+      addressLine: address.addressLine || "",
+      city: address.city || "",
+      state: address.state || "",
+      pincode: address.pincode || "",
+      landmark: address.landmark || "",
+      addressType: address.addressType || "Home",
+      defaultAddress: address.defaultAddress || false,
+    });
+
+    setAddressError("");
+    setAddressMessage("");
+    setShowAddressModal(true);
+  };
+
+  const closeAddressModal = () => {
+    if (!savingAddress) {
+      setShowAddressModal(false);
+      setEditingAddressId(null);
+      setAddressForm(emptyAddressForm);
+      setAddressError("");
+    }
+  };
+
+  const handleAddressInputChange = (
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value, type } = event.target;
+
+    if (type === "checkbox") {
+      const checked = (event.target as HTMLInputElement).checked;
+
+      setAddressForm((previous) => ({
+        ...previous,
+        [name]: checked,
+      }));
+      return;
+    }
+
+    setAddressForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  };
+
+  const handleSaveAddress = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+
+    if (!user?.id) {
+      setAddressError("User ID not found. Please login again.");
+      return;
+    }
+
+    if (!/^[0-9]{10}$/.test(addressForm.phone.trim())) {
+      setAddressError("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
+    if (!/^[0-9]{6}$/.test(addressForm.pincode.trim())) {
+      setAddressError("Please enter a valid 6-digit pincode.");
+      return;
+    }
+
+    setSavingAddress(true);
+    setAddressError("");
+    setAddressMessage("");
+
+    try {
+      const url = editingAddressId
+        ? `${ADDRESS_API_URL}/${user.id}/${editingAddressId}`
+        : `${ADDRESS_API_URL}/${user.id}`;
+
+      const response = await fetch(url, {
+        method: editingAddressId ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...addressForm,
+          fullName: addressForm.fullName.trim(),
+          phone: addressForm.phone.trim(),
+          addressLine: addressForm.addressLine.trim(),
+          city: addressForm.city.trim(),
+          state: addressForm.state.trim(),
+          pincode: addressForm.pincode.trim(),
+          landmark: addressForm.landmark.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to save address.");
+      }
+
+      setAddressMessage(
+        editingAddressId
+          ? "Address updated successfully!"
+          : "Address added successfully!"
+      );
+
+      await fetchAddresses();
+
+      setTimeout(() => {
+        setShowAddressModal(false);
+        setEditingAddressId(null);
+        setAddressForm(emptyAddressForm);
+        setAddressMessage("");
+      }, 700);
+    } catch (err) {
+      setAddressError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setSavingAddress(false);
+    }
+  };
+
+  const handleSetDefaultAddress = async (addressId: number) => {
+    if (!user?.id) return;
+
+    try {
+      const response = await fetch(
+        `${ADDRESS_API_URL}/${user.id}/${addressId}/default`,
+        {
+          method: "PUT",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to set default address.");
+      }
+
+      setAddressMessage("Default address updated successfully!");
+      await fetchAddresses();
+    } catch (err) {
+      setAddressError(
+        err instanceof Error
+          ? err.message
+          : "Unable to update default address."
+      );
+    }
+  };
+
+  const handleDeleteAddress = async (addressId: number) => {
+    if (!user?.id) return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this address?"
+    );
+
+    if (!confirmed) return;
+
+    setAddressError("");
+    setAddressMessage("");
+
+    try {
+      const response = await fetch(
+        `${ADDRESS_API_URL}/${user.id}/${addressId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to delete address.");
+      }
+
+      setAddressMessage("Address deleted successfully!");
+      await fetchAddresses();
+    } catch (err) {
+      setAddressError(
+        err instanceof Error
+          ? err.message
+          : "Unable to delete address."
+      );
+    }
+  };
+
+  const scrollToAddresses = () => {
+    document.getElementById("my-addresses")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  // LOGOUT
   const handleLogout = () => {
     if (window.confirm("Are you sure you want to logout?")) {
       sessionStorage.removeItem("mealoraUser");
@@ -395,7 +690,7 @@ export default function ProfilePage() {
 
           <button
             className="profile-feature-card"
-            onClick={() => alert("My Addresses feature is coming next!")}
+            onClick={scrollToAddresses}
           >
             <div className="feature-icon">📍</div>
             <div>
@@ -469,11 +764,135 @@ export default function ProfilePage() {
           </div>
         </div>
 
+        {/* MY ADDRESSES SECTION */}
+        <div className="address-section" id="my-addresses">
+          <div className="address-section-heading">
+            <div>
+              <span className="address-eyebrow">DELIVERY DETAILS</span>
+              <h2>My Addresses</h2>
+              <p>Save and manage your delivery locations.</p>
+            </div>
+
+            <button
+              type="button"
+              className="address-add-button"
+              onClick={openAddAddress}
+            >
+              + Add New Address
+            </button>
+          </div>
+
+          {addressMessage && (
+            <div className="address-success-message">
+              {addressMessage}
+            </div>
+          )}
+
+          {addressError && !showAddressModal && (
+            <div className="address-error-message">
+              {addressError}
+            </div>
+          )}
+
+          {loadingAddresses ? (
+            <div className="address-empty-state">
+              Loading your addresses...
+            </div>
+          ) : addresses.length === 0 ? (
+            <div className="address-empty-state">
+              <div className="address-empty-icon">📍</div>
+              <h3>No saved addresses yet</h3>
+              <p>
+                Add your delivery address to make your next order easier.
+              </p>
+              <button
+                type="button"
+                className="address-add-button"
+                onClick={openAddAddress}
+              >
+                + Add Your First Address
+              </button>
+            </div>
+          ) : (
+            <div className="address-grid">
+              {addresses.map((address) => (
+                <article className="address-card" key={address.id}>
+                  <div className="address-card-top">
+                    <div className="address-type">
+                      <span>
+                        {address.addressType === "Home"
+                          ? "🏠"
+                          : address.addressType === "Work"
+                          ? "🏢"
+                          : "📍"}
+                      </span>
+                      {address.addressType}
+                    </div>
+
+                    {address.defaultAddress && (
+                      <span className="address-default-badge">
+                        DEFAULT
+                      </span>
+                    )}
+                  </div>
+
+                  <h3>{address.fullName}</h3>
+                  <p className="address-phone">📞 {address.phone}</p>
+
+                  <p className="address-full-text">
+                    {address.addressLine}
+                    {address.landmark && (
+                      <>
+                        <br />
+                        {address.landmark}
+                      </>
+                    )}
+                    <br />
+                    {address.city}, {address.state} - {address.pincode}
+                  </p>
+
+                  <div className="address-card-actions">
+                    <button
+                      type="button"
+                      className="address-action-edit"
+                      onClick={() => openEditAddress(address)}
+                    >
+                      ✎ Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      className="address-action-delete"
+                      onClick={() => handleDeleteAddress(address.id)}
+                    >
+                      Delete
+                    </button>
+
+                    {!address.defaultAddress && (
+                      <button
+                        type="button"
+                        className="address-action-default"
+                        onClick={() =>
+                          handleSetDefaultAddress(address.id)
+                        }
+                      >
+                        Set Default
+                      </button>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* BOTTOM ACTIONS */}
         <div className="profile-bottom">
           <div>
             <h3>Hungry for something delicious?</h3>
-            <p>Explore our menu and discover your next favourite meal.</p>
+            <p>
+              Explore our menu and discover your next favourite meal.
+            </p>
           </div>
 
           <Link href="/" className="profile-shop-button">
@@ -715,6 +1134,208 @@ export default function ProfilePage() {
                   disabled={changingPassword}
                 >
                   {changingPassword ? "Updating..." : "Update Password"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ADD / EDIT ADDRESS MODAL */}
+      {showAddressModal && (
+        <div
+          className="edit-profile-overlay"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              closeAddressModal();
+            }
+          }}
+        >
+          <div
+            className="edit-profile-modal address-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="address-modal-title"
+          >
+            <div className="edit-profile-header">
+              <div>
+                <span>MEALORA DELIVERY</span>
+                <h2 id="address-modal-title">
+                  {editingAddressId ? "Edit Address" : "Add New Address"}
+                </h2>
+                <p>Enter your delivery address details.</p>
+              </div>
+
+              <button
+                type="button"
+                className="edit-profile-close"
+                onClick={closeAddressModal}
+                disabled={savingAddress}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAddress}>
+              <div className="edit-profile-field">
+                <label htmlFor="address-fullName">Full Name</label>
+                <input
+                  id="address-fullName"
+                  name="fullName"
+                  type="text"
+                  placeholder="Enter recipient name"
+                  value={addressForm.fullName}
+                  onChange={handleAddressInputChange}
+                  maxLength={50}
+                  required
+                />
+              </div>
+
+              <div className="edit-profile-field">
+                <label htmlFor="address-phone">Phone Number</label>
+                <input
+                  id="address-phone"
+                  name="phone"
+                  type="tel"
+                  placeholder="10-digit mobile number"
+                  value={addressForm.phone}
+                  onChange={handleAddressInputChange}
+                  pattern="[0-9]{10}"
+                  maxLength={10}
+                  required
+                />
+              </div>
+
+              <div className="edit-profile-field">
+                <label htmlFor="address-addressLine">Address</label>
+                <textarea
+                  id="address-addressLine"
+                  name="addressLine"
+                  placeholder="House number, building, street, area"
+                  value={addressForm.addressLine}
+                  onChange={handleAddressInputChange}
+                  maxLength={255}
+                  rows={3}
+                  required
+                />
+              </div>
+
+              <div className="address-form-row">
+                <div className="edit-profile-field">
+                  <label htmlFor="address-city">City</label>
+                  <input
+                    id="address-city"
+                    name="city"
+                    type="text"
+                    placeholder="City"
+                    value={addressForm.city}
+                    onChange={handleAddressInputChange}
+                    maxLength={100}
+                    required
+                  />
+                </div>
+
+                <div className="edit-profile-field">
+                  <label htmlFor="address-state">State</label>
+                  <input
+                    id="address-state"
+                    name="state"
+                    type="text"
+                    placeholder="State"
+                    value={addressForm.state}
+                    onChange={handleAddressInputChange}
+                    maxLength={100}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="address-form-row">
+                <div className="edit-profile-field">
+                  <label htmlFor="address-pincode">Pincode</label>
+                  <input
+                    id="address-pincode"
+                    name="pincode"
+                    type="text"
+                    placeholder="6-digit pincode"
+                    value={addressForm.pincode}
+                    onChange={handleAddressInputChange}
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    required
+                  />
+                </div>
+
+                <div className="edit-profile-field">
+                  <label htmlFor="address-landmark">Landmark (Optional)</label>
+                  <input
+                    id="address-landmark"
+                    name="landmark"
+                    type="text"
+                    placeholder="Nearby landmark"
+                    value={addressForm.landmark}
+                    onChange={handleAddressInputChange}
+                    maxLength={100}
+                  />
+                </div>
+              </div>
+
+              <div className="edit-profile-field">
+                <label htmlFor="address-addressType">Address Type</label>
+                <select
+                  id="address-addressType"
+                  name="addressType"
+                  value={addressForm.addressType}
+                  onChange={handleAddressInputChange}
+                  required
+                >
+                  <option value="Home">Home</option>
+                  <option value="Work">Work</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <label className="address-default-checkbox">
+                <input
+                  type="checkbox"
+                  name="defaultAddress"
+                  checked={addressForm.defaultAddress}
+                  onChange={handleAddressInputChange}
+                />
+                Set as default delivery address
+              </label>
+
+              {addressError && (
+                <div className="edit-profile-error">{addressError}</div>
+              )}
+
+              {addressMessage && (
+                <div className="edit-profile-success">
+                  {addressMessage}
+                </div>
+              )}
+
+              <div className="edit-profile-actions">
+                <button
+                  type="button"
+                  className="edit-profile-cancel"
+                  onClick={closeAddressModal}
+                  disabled={savingAddress}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="edit-profile-save"
+                  disabled={savingAddress}
+                >
+                  {savingAddress
+                    ? "Saving..."
+                    : editingAddressId
+                    ? "Update Address"
+                    : "Save Address"}
                 </button>
               </div>
             </form>

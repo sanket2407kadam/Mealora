@@ -6,12 +6,14 @@ import com.sksolution.mealora.dto.LoginRequest;
 import com.sksolution.mealora.dto.ChangePasswordRequest;
 import com.sksolution.mealora.entity.User;
 import com.sksolution.mealora.repository.UserRepository;
+import com.sksolution.mealora.security.JwtService;
 
 import jakarta.validation.Valid;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,13 +28,16 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public AuthController(
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService) {
 
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     // REGISTER
@@ -96,7 +101,7 @@ public class AuthController {
         }
     }
 
-    // LOGIN
+    // LOGIN WITH JWT
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(
             @Valid @RequestBody LoginRequest request) {
@@ -119,9 +124,13 @@ public class AuthController {
                     ));
         }
 
+        // Generate JWT token
+        String token = jwtService.generateToken(user.getEmail());
+
         return ResponseEntity.ok(
                 Map.of(
                         "message", "Login successful!",
+                        "token", token,
                         "id", user.getId(),
                         "name", user.getName(),
                         "email", user.getEmail()
@@ -129,11 +138,22 @@ public class AuthController {
         );
     }
 
-    // CHANGE PASSWORD
+    // CHANGE PASSWORD - AUTHENTICATED USER ONLY
     @PostMapping("/{userId}/change-password")
     public ResponseEntity<Map<String, String>> changePassword(
             @PathVariable Long userId,
+            @AuthenticationPrincipal User authenticatedUser,
             @Valid @RequestBody ChangePasswordRequest request) {
+
+        if (authenticatedUser == null ||
+                !authenticatedUser.getId().equals(userId)) {
+
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of(
+                            "message",
+                            "You are not authorized to change this password."
+                    ));
+        }
 
         User user = userRepository.findById(userId).orElse(null);
 

@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 type OrderItem = {
   id?: number;
@@ -22,8 +22,10 @@ type Order = {
   email?: string;
   address?: string;
   city?: string;
+  state?: string;
   pincode?: string;
   landmark?: string;
+  addressType?: string;
   items?: OrderItem[];
   subtotal?: number;
   deliveryFee?: number;
@@ -33,7 +35,7 @@ type Order = {
   createdAt?: string;
 };
 
-export default function OrderDetailsPage() {
+function OrderDetailsContent() {
   const params = useParams();
   const orderId = String(params.id);
 
@@ -90,7 +92,6 @@ export default function OrderDetailsPage() {
         }
 
         setOrder(selectedOrder);
-
       } catch (err) {
         console.error("Order details error:", err);
 
@@ -151,8 +152,9 @@ export default function OrderDetailsPage() {
           : null
       );
 
-      setCancelMessage("Your order has been cancelled successfully!");
-
+      setCancelMessage(
+        "Your order has been cancelled successfully!"
+      );
     } catch (err) {
       console.error("Cancel order error:", err);
 
@@ -161,7 +163,6 @@ export default function OrderDetailsPage() {
           ? err.message
           : "Something went wrong while cancelling."
       );
-
     } finally {
       setCancelling(false);
     }
@@ -233,11 +234,19 @@ export default function OrderDetailsPage() {
           <>
             <div className="od-heading">
               <span className="od-eyebrow">YOUR MEALORA ORDER</span>
-              <h1>Order <span>Details</span></h1>
+
+              <h1>
+                Order <span>Details</span>
+              </h1>
+
               <p>Here is everything about your delicious order.</p>
             </div>
 
-            <div className={`od-success ${isCancelled ? "od-cancelled-banner" : ""}`}>
+            <div
+              className={`od-success ${
+                isCancelled ? "od-cancelled-banner" : ""
+              }`}
+            >
               <div className="od-success-icon">
                 {isCancelled ? "✕" : "✓"}
               </div>
@@ -264,7 +273,11 @@ export default function OrderDetailsPage() {
                   <h2>{order.orderCode || "ML-ORDER"}</h2>
                 </div>
 
-                <span className={`od-status ${isCancelled ? "od-status-cancelled" : ""}`}>
+                <span
+                  className={`od-status ${
+                    isCancelled ? "od-status-cancelled" : ""
+                  }`}
+                >
                   {formatStatus(order.orderStatus)}
                 </span>
               </div>
@@ -341,20 +354,41 @@ export default function OrderDetailsPage() {
                 <h2>Delivery Address</h2>
               </div>
 
-              <div className="od-address">
-                <h3>{order.customerName || "Customer"}</h3>
-                <p>{order.phone || "Phone unavailable"}</p>
-                <p>{order.address || "Address unavailable"}</p>
+              <div className="od-address od-address-updated">
+                <div className="od-address-top">
+                  <h3>{order.customerName || "Customer"}</h3>
+
+                  {order.addressType && (
+                    <span className="od-address-type">
+                      {order.addressType}
+                    </span>
+                  )}
+                </div>
+
                 <p>
-                  {order.city || ""}
-                  {order.pincode ? ` - ${order.pincode}` : ""}
+                  <strong>Phone:</strong>{" "}
+                  {order.phone || "Phone unavailable"}
                 </p>
 
-                {order.landmark && (
-                  <p>Landmark: {order.landmark}</p>
-                )}
+                <p>
+                  {order.address || "Address unavailable"}
+                </p>
 
-                <p>{order.email}</p>
+                <p>
+                  {[
+                    order.landmark,
+                    order.city,
+                    order.state,
+                    order.pincode,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
+
+                <p>
+                  <strong>Email:</strong>{" "}
+                  {order.email || "Email unavailable"}
+                </p>
               </div>
             </section>
 
@@ -387,7 +421,10 @@ export default function OrderDetailsPage() {
             </section>
 
             <div className="od-bottom">
-              <Link href="/order-history" className="od-button od-secondary">
+              <Link
+                href="/order-history"
+                className="od-button od-secondary"
+              >
                 ← Back to Orders
               </Link>
 
@@ -425,5 +462,25 @@ export default function OrderDetailsPage() {
         <p>Fresh food, happy moments.</p>
       </footer>
     </main>
+  );
+}
+
+// Suspense wrapper for Next.js 16 useParams()
+export default function OrderDetailsPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="od-page">
+          <section className="od-container">
+            <div className="od-message">
+              <h2>Loading order details...</h2>
+              <p>Please wait...</p>
+            </div>
+          </section>
+        </main>
+      }
+    >
+      <OrderDetailsContent />
+    </Suspense>
   );
 }

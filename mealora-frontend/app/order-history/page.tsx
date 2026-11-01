@@ -18,6 +18,12 @@ type Order = {
   orderCode?: string;
   customerName?: string;
   email?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  landmark?: string;
+  addressType?: string;
   items?: OrderItem[];
   subtotal?: number;
   deliveryFee?: number;
@@ -58,9 +64,7 @@ export default function OrderHistoryPage() {
 
         if (!email) {
           setOrders([]);
-          setError(
-            "Customer email not found. Please place an order first."
-          );
+          setError("Customer email not found. Please place an order first.");
           return;
         }
 
@@ -74,7 +78,6 @@ export default function OrderHistoryPage() {
 
         const data = await response.json();
         setOrders(Array.isArray(data) ? data : []);
-
       } catch (err) {
         console.error("Order history error:", err);
 
@@ -236,6 +239,30 @@ export default function OrderHistoryPage() {
                           </div>
                         );
                       })}
+                    </div>
+
+                    <div className="oh-delivery-address">
+                      <div className="oh-address-heading">
+                        <strong>📍 Delivery Address</strong>
+
+                        {order.addressType && (
+                          <span>{order.addressType}</span>
+                        )}
+                      </div>
+
+                      <p>{order.customerName || "Customer"}</p>
+
+                      <p>
+                        {[
+                          order.address,
+                          order.landmark,
+                          order.city,
+                          order.state,
+                          order.pincode,
+                        ]
+                          .filter(Boolean)
+                          .join(", ") || "Address not available"}
+                      </p>
                     </div>
 
                     <div className="oh-order-bottom">

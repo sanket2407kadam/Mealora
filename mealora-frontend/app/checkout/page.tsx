@@ -16,6 +16,19 @@ type Food = {
   image: string;
 };
 
+type SavedAddress = {
+  id: number;
+  fullName: string;
+  phone: string;
+  addressLine: string;
+  city: string;
+  state: string;
+  pincode: string;
+  landmark?: string;
+  addressType: string;
+  defaultAddress: boolean;
+};
+
 type ApiOrderResponse = {
   success: boolean;
   message: string;
@@ -31,6 +44,7 @@ type ApiOrderResponse = {
 
 const CART_KEY = "mealoraCart";
 const API_URL = "http://localhost:8080/api/orders";
+const ADDRESS_API_URL = "http://localhost:8080/api/addresses";
 
 const foods: Food[] = [
   {
@@ -84,16 +98,22 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState("");
+
   const [form, setForm] = useState({
     name: "",
     phone: "",
     email: "",
     address: "",
     city: "",
+    state: "",
     pincode: "",
     landmark: "",
+    addressType: "Other",
   });
 
+  // Load cart from localStorage
   useEffect(() => {
     try {
       const saved = localStorage.getItem(CART_KEY);
@@ -139,6 +159,79 @@ export default function CheckoutPage() {
     setLoaded(true);
   }, []);
 
+  // Load saved addresses from Profile
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSavedAddresses() {
+      try {
+        const storedUser = sessionStorage.getItem("mealoraUser");
+
+        if (!storedUser) return;
+
+        const parsedUser = JSON.parse(storedUser);
+        const user = parsedUser.user ?? parsedUser;
+
+        const userId = Number(user.id ?? user.userId);
+
+        if (!userId || !Number.isFinite(userId)) {
+          console.error("User ID not found in session.");
+          return;
+        }
+
+        const response = await fetch(
+          `${ADDRESS_API_URL}/${userId}`
+        );
+
+        if (!response.ok) {
+          console.error("Unable to fetch saved addresses.");
+          return;
+        }
+
+        const data = await response.json();
+
+        const addresses: SavedAddress[] = Array.isArray(data)
+          ? data
+          : Array.isArray(data.addresses)
+            ? data.addresses
+            : [];
+
+        if (cancelled) return;
+
+        setSavedAddresses(addresses);
+
+        const defaultAddress =
+          addresses.find((address) => address.defaultAddress) ||
+          addresses[0];
+
+        if (defaultAddress) {
+          setSelectedAddressId(String(defaultAddress.id));
+
+          setForm((current) => ({
+            ...current,
+            name: current.name || defaultAddress.fullName || "",
+            phone: current.phone || defaultAddress.phone || "",
+            address: defaultAddress.addressLine || "",
+            city: defaultAddress.city || "",
+            state: defaultAddress.state || "",
+            pincode: defaultAddress.pincode || "",
+            landmark: defaultAddress.landmark || "",
+            addressType: defaultAddress.addressType || "Other",
+          }));
+        }
+      } catch (err) {
+        console.error("Unable to load saved addresses:", err);
+      }
+    }
+
+    loadSavedAddresses();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Prepare cart items
   const items = cart
     .map((item) => {
       const food = foods.find((f) => f.id === item.id);
@@ -158,6 +251,7 @@ export default function CheckoutPage() {
 
   const total = subtotal + delivery;
 
+  // Update form fields
   function updateField(field: string, value: string) {
     setForm((current) => ({
       ...current,
@@ -165,6 +259,26 @@ export default function CheckoutPage() {
     }));
   }
 
+  // Select saved address
+  function selectSavedAddress(address: SavedAddress) {
+    setSelectedAddressId(String(address.id));
+
+    setForm((current) => ({
+      ...current,
+      name: address.fullName || current.name,
+      phone: address.phone || current.phone,
+      address: address.addressLine || "",
+      city: address.city || "",
+      state: address.state || "",
+      pincode: address.pincode || "",
+      landmark: address.landmark || "",
+      addressType: address.addressType || "Other",
+    }));
+
+    setError("");
+  }
+
+  // Place order
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -187,6 +301,11 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!form.state.trim()) {
+      setError("Please enter your state.");
+      return;
+    }
+
     if (payment === "online") {
       setError(
         "Online payment is not connected yet. Please select Cash on Delivery."
@@ -204,8 +323,10 @@ export default function CheckoutPage() {
         email: form.email.trim(),
         address: form.address.trim(),
         city: form.city.trim(),
+        state: form.state.trim(),
         pincode: form.pincode,
         landmark: form.landmark.trim(),
+        addressType: form.addressType,
         paymentMethod: "COD",
         items: items.map((item) => ({
           foodId: item.id,
@@ -235,7 +356,7 @@ export default function CheckoutPage() {
       // Prepare order data for existing success and history pages
       const order = {
         orderId: apiOrder.orderId,
-        customer: form,
+        customer: { ...form },
         items,
         subtotal: apiOrder.subtotal,
         delivery: apiOrder.deliveryFee,
@@ -423,6 +544,85 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
+              {/* Saved Addresses */}
+              {savedAddresses.length > 0 && (
+                <div className="co-saved-addresses">
+                  <div className="co-saved-heading">
+                    <h3>Choose a saved address</h3>
+
+                    <Link href="/profile">
+                      Manage addresses →
+                    </Link>
+                  </div>
+
+                  <div className="co-saved-address-list">
+                    {savedAddresses.map((address) => (
+                      <label
+                        key={address.id}
+                        className={`co-saved-address ${
+                          selectedAddressId === String(address.id)
+                            ? "selected"
+                            : ""
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="savedAddress"
+                          value={address.id}
+                          checked={
+                            selectedAddressId === String(address.id)
+                          }
+                          onChange={() =>
+                            selectSavedAddress(address)
+                          }
+                        />
+
+                        <div className="co-saved-address-info">
+                          <strong>
+                            {address.addressType}
+
+                            {address.defaultAddress && (
+                              <span className="co-default-label">
+                                Default
+                              </span>
+                            )}
+                          </strong>
+
+                          <span>
+                            {address.fullName} · {address.phone}
+                          </span>
+
+                          <p>
+                            {address.addressLine}, {address.city},{" "}
+                            {address.state} - {address.pincode}
+                          </p>
+
+                          {address.landmark && (
+                            <small>
+                              Landmark: {address.landmark}
+                            </small>
+                          )}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {savedAddresses.length === 0 && (
+                <div className="co-no-saved-address">
+                  <p>
+                    No saved addresses found. You can enter your
+                    delivery address below.
+                  </p>
+
+                  <Link href="/profile">
+                    Add an address in Profile →
+                  </Link>
+                </div>
+              )}
+
+              {/* Delivery Form */}
               <div className="co-fields">
                 <label className="co-field co-full">
                   House / Flat / Street address
@@ -455,6 +655,21 @@ export default function CheckoutPage() {
                 </label>
 
                 <label className="co-field">
+                  State
+
+                  <input
+                    type="text"
+                    placeholder="e.g. Maharashtra"
+                    value={form.state}
+                    onChange={(e) =>
+                      updateField("state", e.target.value)
+                    }
+                    required
+                    autoComplete="address-level1"
+                  />
+                </label>
+
+                <label className="co-field">
                   PIN code
 
                   <input
@@ -469,6 +684,22 @@ export default function CheckoutPage() {
                     maxLength={6}
                     autoComplete="postal-code"
                   />
+                </label>
+
+                <label className="co-field">
+                  Address type
+
+                  <select
+                    value={form.addressType}
+                    onChange={(e) =>
+                      updateField("addressType", e.target.value)
+                    }
+                    required
+                  >
+                    <option value="Home">Home</option>
+                    <option value="Work">Work</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </label>
 
                 <label className="co-field co-full">

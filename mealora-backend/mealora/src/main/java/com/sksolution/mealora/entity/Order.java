@@ -1,3 +1,4 @@
+
 package com.sksolution.mealora.entity;
 
 import jakarta.persistence.*;
@@ -32,10 +33,18 @@ public class Order {
     @Column(nullable = false)
     private String city;
 
+    // New field: State
+    @Column(length = 100)
+    private String state;
+
     @Column(nullable = false, length = 6)
     private String pincode;
 
     private String landmark;
+
+    // New field: Address Type (Home / Work / Other)
+    @Column(length = 20)
+    private String addressType;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal subtotal;
@@ -122,6 +131,15 @@ public class Order {
         this.city = city;
     }
 
+    // State getter and setter
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
     public String getPincode() {
         return pincode;
     }
@@ -136,6 +154,15 @@ public class Order {
 
     public void setLandmark(String landmark) {
         this.landmark = landmark;
+    }
+
+    // Address Type getter and setter
+    public String getAddressType() {
+        return addressType;
+    }
+
+    public void setAddressType(String addressType) {
+        this.addressType = addressType;
     }
 
     public BigDecimal getSubtotal() {

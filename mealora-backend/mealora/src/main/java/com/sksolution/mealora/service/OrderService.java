@@ -58,8 +58,27 @@ public class OrderService {
         order.setEmail(request.email().trim().toLowerCase());
         order.setAddress(request.address().trim());
         order.setCity(request.city().trim());
+
+        // Save state and address type
+        order.setState(
+                isBlank(request.state())
+                        ? "Not specified"
+                        : request.state().trim()
+        );
+
+        order.setAddressType(
+                isBlank(request.addressType())
+                        ? "Other"
+                        : request.addressType().trim()
+        );
+
         order.setPincode(request.pincode().trim());
-        order.setLandmark(request.landmark());
+
+        order.setLandmark(
+                request.landmark() == null
+                        ? null
+                        : request.landmark().trim()
+        );
 
         order.setPaymentMethod("CASH_ON_DELIVERY");
 
@@ -212,6 +231,23 @@ public class OrderService {
 
             throw new IllegalArgumentException(
                     "Enter a valid 6-digit PIN code."
+            );
+        }
+
+        if (!isBlank(request.state()) &&
+                request.state().trim().length() > 100) {
+
+            throw new IllegalArgumentException(
+                    "State name cannot exceed 100 characters."
+            );
+        }
+
+        if (!isBlank(request.addressType()) &&
+                !List.of("Home", "Work", "Other")
+                        .contains(request.addressType().trim())) {
+
+            throw new IllegalArgumentException(
+                    "Address type must be Home, Work or Other."
             );
         }
 

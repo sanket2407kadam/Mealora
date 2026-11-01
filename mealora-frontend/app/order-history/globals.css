@@ -351,3 +351,54 @@
   font-weight: 700;
   text-align: right;
 }
+
+/* ORDER HISTORY DELIVERY ADDRESS */
+
+.oh-delivery-address {
+  margin-top: 20px;
+  padding: 16px 18px;
+  border: 1px solid #e9dfc9;
+  border-radius: 13px;
+  background: #fcfaf4;
+}
+
+.oh-address-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  color: #244a3c;
+  font-size: 14px;
+}
+
+.oh-address-heading span {
+  padding: 5px 11px;
+  border-radius: 20px;
+  background: #e9dfc9;
+  color: #244a3c;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.oh-delivery-address p {
+  margin: 4px 0;
+  color: #686c62;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.oh-delivery-address p:first-of-type {
+  color: #244a3c;
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .oh-delivery-address {
+    padding: 13px;
+  }
+
+  .oh-address-heading {
+    align-items: flex-start;
+  }
+}
