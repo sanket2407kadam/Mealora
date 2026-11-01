@@ -4,10 +4,12 @@ package com.sksolution.mealora.controller;
 import com.sksolution.mealora.dto.OrderRequest;
 import com.sksolution.mealora.entity.Order;
 import com.sksolution.mealora.entity.OrderItem;
+import com.sksolution.mealora.entity.User;
 import com.sksolution.mealora.service.OrderService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,10 +41,15 @@ public class OrderController {
 
     // Place Order
     @PostMapping
-    public ResponseEntity<?> placeOrder(@RequestBody OrderRequest request) {
+    public ResponseEntity<?> placeOrder(
+            @RequestBody OrderRequest request,
+            @AuthenticationPrincipal User authenticatedUser) {
 
         try {
-            Order savedOrder = orderService.placeOrder(request);
+            Order savedOrder = orderService.placeOrder(
+                    request,
+                    authenticatedUser.getEmail()
+            );
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Order placed successfully!");
@@ -70,14 +77,16 @@ public class OrderController {
         }
     }
 
-    // Get Order History By Email
+    // Get Order History
     @GetMapping("/history")
     @Transactional(readOnly = true)
     public ResponseEntity<?> getOrderHistory(
-            @RequestParam(name = "email") String email) {
+            @AuthenticationPrincipal User authenticatedUser) {
 
         try {
-            List<Order> orders = orderService.getOrdersByEmail(email);
+            List<Order> orders = orderService.getOrdersByEmail(
+                    authenticatedUser.getEmail()
+            );
 
             List<Map<String, Object>> response = new ArrayList<>();
 
@@ -123,13 +132,6 @@ public class OrderController {
 
             return ResponseEntity.ok(response);
 
-        } catch (IllegalArgumentException ex) {
-
-            Map<String, String> error = new HashMap<>();
-            error.put("message", ex.getMessage());
-
-            return ResponseEntity.badRequest().body(error);
-
         } catch (Exception ex) {
 
             Map<String, String> error = new HashMap<>();
@@ -143,10 +145,14 @@ public class OrderController {
     // Cancel Order
     @PutMapping("/{orderId}/cancel")
     public ResponseEntity<?> cancelOrder(
-            @PathVariable Long orderId) {
+            @PathVariable Long orderId,
+            @AuthenticationPrincipal User authenticatedUser) {
 
         try {
-            Order cancelledOrder = orderService.cancelOrder(orderId);
+            Order cancelledOrder = orderService.cancelOrder(
+                    orderId,
+                    authenticatedUser.getEmail()
+            );
 
             Map<String, Object> response = new HashMap<>();
 

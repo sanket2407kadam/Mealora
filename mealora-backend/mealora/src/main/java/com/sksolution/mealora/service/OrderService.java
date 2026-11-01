@@ -24,7 +24,6 @@ public class OrderService {
         this.orderRepository = orderRepository;
     }
 
-    // Temporary menu catalogue
     private static final Map<Long, MenuFood> MENU = Map.of(
             1L, new MenuFood("Paneer Tikka Bowl", new BigDecimal("249.00")),
             2L, new MenuFood("Margherita Pizza", new BigDecimal("299.00")),
@@ -34,14 +33,23 @@ public class OrderService {
             6L, new MenuFood("Chocolate Lava Cake", new BigDecimal("159.00"))
     );
 
-    private record MenuFood(String name, BigDecimal price) {
-    }
+    private record MenuFood(String name, BigDecimal price) {}
 
     // Place Order
     @Transactional
-    public Order placeOrder(OrderRequest request) {
+    public Order placeOrder(OrderRequest request, String authenticatedEmail) {
 
         validateRequest(request);
+
+        if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
+            throw new IllegalArgumentException("Authenticated email is required.");
+        }
+
+        if (!authenticatedEmail.trim().equalsIgnoreCase(request.email().trim())) {
+            throw new IllegalArgumentException(
+                    "Order email must match your logged-in account."
+            );
+        }
 
         Order order = new Order();
 
@@ -55,29 +63,22 @@ public class OrderService {
 
         order.setCustomerName(request.customerName().trim());
         order.setPhone(request.phone().trim());
-        order.setEmail(request.email().trim().toLowerCase());
+        order.setEmail(authenticatedEmail.trim().toLowerCase());
         order.setAddress(request.address().trim());
         order.setCity(request.city().trim());
 
-        // Save state and address type
         order.setState(
-                isBlank(request.state())
-                        ? "Not specified"
-                        : request.state().trim()
+                isBlank(request.state()) ? "Not specified" : request.state().trim()
         );
 
         order.setAddressType(
-                isBlank(request.addressType())
-                        ? "Other"
-                        : request.addressType().trim()
+                isBlank(request.addressType()) ? "Other" : request.addressType().trim()
         );
 
         order.setPincode(request.pincode().trim());
 
         order.setLandmark(
-                request.landmark() == null
-                        ? null
-                        : request.landmark().trim()
+                request.landmark() == null ? null : request.landmark().trim()
         );
 
         order.setPaymentMethod("CASH_ON_DELIVERY");
@@ -110,7 +111,6 @@ public class OrderService {
             subtotal = subtotal.add(itemTotal);
 
             OrderItem item = new OrderItem();
-
             item.setFoodId(requestedItem.foodId());
             item.setFoodName(food.name());
             item.setPrice(food.price());
@@ -121,9 +121,7 @@ public class OrderService {
 
         BigDecimal deliveryFee = subtotal.compareTo(
                 new BigDecimal("499.00")
-        ) >= 0
-                ? BigDecimal.ZERO
-                : new BigDecimal("30.00");
+        ) >= 0 ? BigDecimal.ZERO : new BigDecimal("30.00");
 
         BigDecimal total = subtotal.add(deliveryFee);
 
@@ -134,35 +132,35 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    // Get Order History By Customer Email
+    // Order History
     @Transactional(readOnly = true)
-    public List<Order> getOrdersByEmail(String email) {
+    public List<Order> getOrdersByEmail(String authenticatedEmail) {
 
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Email is required."
-            );
+        if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
+            throw new IllegalArgumentException("Authenticated email is required.");
         }
 
         return orderRepository.findAllByEmailOrderByCreatedAtDesc(
-                email.trim().toLowerCase()
+                authenticatedEmail.trim().toLowerCase()
         );
     }
 
     // Cancel Order
     @Transactional
-    public Order cancelOrder(Long orderId) {
+    public Order cancelOrder(Long orderId, String authenticatedEmail) {
 
         if (orderId == null || orderId <= 0) {
-            throw new IllegalArgumentException(
-                    "Invalid order ID."
-            );
+            throw new IllegalArgumentException("Invalid order ID.");
         }
 
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Order not found."
-                ));
+        if (authenticatedEmail == null || authenticatedEmail.isBlank()) {
+            throw new IllegalArgumentException("Authenticated email is required.");
+        }
+
+        Order order = orderRepository.findByIdAndEmail(
+                orderId,
+                authenticatedEmail.trim().toLowerCase()
+        ).orElseThrow(() -> new IllegalArgumentException("Order not found."));
 
         if (!"PLACED".equalsIgnoreCase(order.getOrderStatus())) {
             throw new IllegalStateException(
@@ -179,26 +177,18 @@ public class OrderService {
     private void validateRequest(OrderRequest request) {
 
         if (request == null) {
-            throw new IllegalArgumentException(
-                    "Order request is required."
-            );
+            throw new IllegalArgumentException("Order request is required.");
         }
 
         if (isBlank(request.customerName()) ||
                 request.customerName().trim().length() < 2 ||
                 request.customerName().trim().length() > 100) {
-
-            throw new IllegalArgumentException(
-                    "Enter a valid customer name."
-            );
+            throw new IllegalArgumentException("Enter a valid customer name.");
         }
 
         if (request.phone() == null ||
                 !Pattern.matches("[6-9][0-9]{9}", request.phone().trim())) {
-
-            throw new IllegalArgumentException(
-                    "Enter a valid 10-digit mobile number."
-            );
+            throw new IllegalArgumentException("Enter a valid 10-digit mobile number.");
         }
 
         if (request.email() == null ||
@@ -206,46 +196,30 @@ public class OrderService {
                         "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$",
                         request.email().trim()
                 )) {
-
-            throw new IllegalArgumentException(
-                    "Enter a valid email address."
-            );
+            throw new IllegalArgumentException("Enter a valid email address.");
         }
 
         if (isBlank(request.address()) ||
                 request.address().trim().length() > 500) {
-
-            throw new IllegalArgumentException(
-                    "Enter a valid delivery address."
-            );
+            throw new IllegalArgumentException("Enter a valid delivery address.");
         }
 
         if (isBlank(request.city())) {
-            throw new IllegalArgumentException(
-                    "City is required."
-            );
+            throw new IllegalArgumentException("City is required.");
         }
 
         if (request.pincode() == null ||
                 !Pattern.matches("[0-9]{6}", request.pincode().trim())) {
-
-            throw new IllegalArgumentException(
-                    "Enter a valid 6-digit PIN code."
-            );
+            throw new IllegalArgumentException("Enter a valid 6-digit PIN code.");
         }
 
         if (!isBlank(request.state()) &&
                 request.state().trim().length() > 100) {
-
-            throw new IllegalArgumentException(
-                    "State name cannot exceed 100 characters."
-            );
+            throw new IllegalArgumentException("State name cannot exceed 100 characters.");
         }
 
         if (!isBlank(request.addressType()) &&
-                !List.of("Home", "Work", "Other")
-                        .contains(request.addressType().trim())) {
-
+                !List.of("Home", "Work", "Other").contains(request.addressType().trim())) {
             throw new IllegalArgumentException(
                     "Address type must be Home, Work or Other."
             );
@@ -254,15 +228,11 @@ public class OrderService {
         if (request.items() == null ||
                 request.items().isEmpty() ||
                 request.items().size() > 50) {
-
-            throw new IllegalArgumentException(
-                    "Your order must contain valid food items."
-            );
+            throw new IllegalArgumentException("Your order must contain valid food items.");
         }
 
         if (request.paymentMethod() == null ||
                 !request.paymentMethod().equalsIgnoreCase("COD")) {
-
             throw new IllegalArgumentException(
                     "Currently only Cash on Delivery is available."
             );
