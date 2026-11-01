@@ -18,6 +18,7 @@ export default function RegisterPage() {
     event: React.FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
+
     setError("");
     setSuccess("");
 
@@ -53,7 +54,7 @@ export default function RegisterPage() {
 
     try {
       const response = await fetch(
-        "http://https://mealora-pc4s.onrender.com/api/auth/register",
+        "https://mealora-pc4s.onrender.com/api/auth/register",
         {
           method: "POST",
           headers: {
@@ -80,7 +81,7 @@ export default function RegisterPage() {
         if (!response.ok) {
           throw new Error(
             response.status === 415
-              ? "Backend rejected the request format (415). Check that the API uses @RequestBody and that the request Content-Type is application/json."
+              ? "Backend rejected the request format (415). Check the registration API."
               : `Server returned HTTP ${response.status}. ${responseText.slice(0, 200)}`
           );
         }
@@ -110,10 +111,12 @@ export default function RegisterPage() {
         router.push("/login");
       }, 1500);
     } catch (err) {
+      console.error("Mealora registration error:", err);
+
       setError(
         err instanceof Error
           ? err.message
-          : "Unable to connect to Mealora backend. Please check that the server is running."
+          : "Unable to connect to Mealora backend. Please try again."
       );
     } finally {
       setLoading(false);
@@ -185,6 +188,7 @@ export default function RegisterPage() {
               maxLength={72}
               required
             />
+
             <button
               type="button"
               className="auth-show-password"
@@ -207,6 +211,7 @@ export default function RegisterPage() {
               maxLength={72}
               required
             />
+
             <button
               type="button"
               className="auth-show-password"
